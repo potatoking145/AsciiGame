@@ -1,5 +1,5 @@
 #include <iostream>
-#include <entt.hpp>
+#include <entt/entt.hpp>
 #include <libtcod.hpp>
 
 int main()
