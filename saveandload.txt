@@ -1,6 +1,5 @@
 //"#include <cereal/types/memory.hpp>" is required for BinaryOutputArchive and BinaryInputArchive to work ;; don't ask me why, it just is
 //does not yet support component removal
-//does not yet support entity removal
 
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/binary.hpp>
@@ -21,18 +20,29 @@
 //	entity.set<position>({ c_<COMPONENT_NAME>-><nVariable> }; repeat c_<COMPONENT_NAME>-><nVariable> for each variable in the component
 //	break;
 
+std::map<flecs::entity_t, flecs::entity> entities; //entities are stored as a map form the id to the class ;; prob replace with unordered_map
+
 void save()
 {
 	std::ofstream os("out.cereal", std::ios::binary); // creates output file
 	cereal::BinaryOutputArchive outa(os);
 
-	for (flecs::entity e : entities) { //loop through all entities
-		outa(e.id()); //save entity id so that when it is loaded we can refind the same entity
+	for (auto const& [id, e] : entities) { // loop through all entites
+		outa(id);
+
+		if (e.is_alive() == false) {
+			outa(false);
+
+			continue; //skips trying to add components from a dead entity
+		}
+		else {
+			outa(true);
+		}
 
 		auto c_position = e.get<position>();
 		if (c_position != nullptr) {
 			outa(1); //component id ;; needed for loading
-			position comp{ c_position->x, c_position->y }; //creates new component 
+			position comp{ c_position->x, c_position->y }; //creates new component
 			outa(comp); //writes component to file
 		}
 
@@ -45,6 +55,8 @@ void save()
 
 		outa(0); //marks the end of the entity
 	}
+
+	outa(4294967295); //marks the end of the save file ;; number is the largest unsiged int
 }
 
 void load()
@@ -54,10 +66,23 @@ void load()
 
 	flecs::entity_t t;
 	int comp_id = 1; //not 0
+	bool is_alive;
+	flecs::entity entity;
 
-	for(int i = 0; i <= entities.size(); i++) {
+	while (true) {
 		ina(t);
-		auto entity = world.entity(t);
+		if (t == 4294967295) { break; } //reached the end
+
+		entity = world.entity(t); //gets entity from entity id
+
+		ina(is_alive);
+		if (is_alive == false) {
+			entity.destruct();
+
+			continue;
+		};
+
+		entities[entity.id()] = entity; //adds the entity if it does not already exist to stored array ;; note: is after checking for aliveness
 
 		while (comp_id != 0) {
 			ina(comp_id);

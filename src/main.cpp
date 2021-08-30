@@ -36,7 +36,7 @@ struct extra
 	}
 };
 
-std::vector<flecs::entity> entities;
+std::map<flecs::entity_t, flecs::entity> entities;
 flecs::world world;
 
 void save()
@@ -44,9 +44,17 @@ void save()
 	std::ofstream os("out.cereal", std::ios::binary);
 	cereal::BinaryOutputArchive outa(os);
 
-	for (flecs::entity e : entities) {
-		outa(e.id());
-		std::cout << e.id() << std::endl;
+	for (auto const& [id, e] : entities) {
+		outa(id);
+
+		if (e.is_alive() == false) {
+			outa(false);
+
+			continue; //skips trying to add components from a dead entity
+		}
+		else {
+			outa(true);
+		}
 
 		auto c_position = e.get<position>();
 		if (c_position != nullptr) {
@@ -62,8 +70,10 @@ void save()
 			outa(comp);
 		}
 
-		outa(0); //marks the end of the entity
+		outa(0); //marks the end of the entity components
 	}
+
+	outa(4294967295); //marks the end of the save file
 }
 
 void load()
@@ -73,10 +83,23 @@ void load()
 
 	flecs::entity_t t;
 	int comp_id = 1; //not 0
+	bool is_alive;
+	flecs::entity entity;
 
-	for(int i = 0; i <= entities.size(); i++) {
+	while (true) {
 		ina(t);
-		auto entity = world.entity(t);
+		if (t == 4294967295) { break; } //reached the end
+
+		entity = world.entity(t); //gets entity from entity id
+
+		ina(is_alive);
+		if (is_alive == false) {
+			entity.destruct();
+
+			continue;
+		};
+
+		entities[entity.id()] = entity; //adds the entity if it does not already exist ;; note: is after checking for aliveness
 
 		while (comp_id != 0) {
 			ina(comp_id);
@@ -99,23 +122,22 @@ void load()
 
 int main()
 {
-	entities.push_back(world.entity(100001)
+	entities[100001] = world.entity(100001)
 		.set<position>({ 1,2 })
-		.set<name>({ "entity_1" }));
+		.set<name>({ "entity_1" });
 
-	entities.push_back(world.entity(100002)
+	entities[100002] = (world.entity(100002)
 		.set<position>({ 5,10 })
 		.set<name>({ "entity_2" }));
 
-	save();
+	entities[100002].destruct();
 
-	entities[0].set<name>({ "entity_bad 1" });
-	entities[0].set<name>({ "entity_bad 2" });
+	save();
 
 	load();
 
-	std::cout << entities[0].get<name>()->n << std::endl;
-	std::cout << entities[1].get<name>()->n << std::endl;
+	std::cout << entities[100002].is_alive();
+
 	system("pause");
 
 	return 0;
