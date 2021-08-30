@@ -1,0 +1,79 @@
+//"#include <cereal/types/memory.hpp>" is required for BinaryOutputArchive and BinaryInputArchive to work ;; don't ask me why, it just is
+//does not yet support component removal
+//does not yet support entity removal
+
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+#include <fstream>
+
+//for saving ;; repeat pattern for each savable component
+//auto c_<COMPONENT_NAME> = e.get<COMPONENT_NAME>();
+//if (c_<COMPONENT_NAME> != nullptr) {
+//	outa(<COMPONENT_ID>);
+//	position comp{ c_<COMPONENT_NAME>-><nVariable> }; repeat c_<COMPONENT_NAME>-><nVariable> for each variable in the component
+//	outa(comp); //writes component to file
+//}
+
+//for loading ;; repeat pattern for each savable component
+//case <COMPONENT_ID>:
+//	<COMPONENT_NAME> c_<COMPONENT_NAME>;
+//	ina(c_<COMPONENT_NAME>);
+//	entity.set<position>({ c_<COMPONENT_NAME>-><nVariable> }; repeat c_<COMPONENT_NAME>-><nVariable> for each variable in the component
+//	break;
+
+void save()
+{
+	std::ofstream os("out.cereal", std::ios::binary); // creates output file
+	cereal::BinaryOutputArchive outa(os);
+
+	for (flecs::entity e : entities) { //loop through all entities
+		outa(e.id()); //save entity id so that when it is loaded we can refind the same entity
+
+		auto c_position = e.get<position>();
+		if (c_position != nullptr) {
+			outa(1); //component id ;; needed for loading
+			position comp{ c_position->x, c_position->y }; //creates new component 
+			outa(comp); //writes component to file
+		}
+
+		auto c_name = e.get<name>();
+		if (c_name != nullptr) {
+			outa(2);
+			name comp{ c_name->n };
+			outa(comp);
+		}
+
+		outa(0); //marks the end of the entity
+	}
+}
+
+void load()
+{
+	std::ifstream is("out.cereal", std::ios::binary);
+	cereal::BinaryInputArchive ina(is);
+
+	flecs::entity_t t;
+	int comp_id = 1; //not 0
+
+	for(int i = 0; i <= entities.size(); i++) {
+		ina(t);
+		auto entity = world.entity(t);
+
+		while (comp_id != 0) {
+			ina(comp_id);
+
+			switch (comp_id) {
+			case 1:
+				position c_pos;
+				ina(c_pos);
+				entity.set<position>({ c_pos.x, c_pos.y });
+				break;
+			case 2:
+				name c_name;
+				ina(c_name);
+				entity.set<name>({ c_name.n });
+				break;
+			}
+		}
+	}
+}
