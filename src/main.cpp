@@ -26,16 +26,6 @@ struct name
 	}
 };
 
-struct extra
-{
-	flecs::entity_t dummy;
-
-	template<class Archive>
-	void serialize(Archive& ar) {
-		ar(dummy);
-	}
-};
-
 std::map<flecs::entity_t, flecs::entity> entities;
 flecs::world world;
 
@@ -49,12 +39,8 @@ void save()
 
 		if (e.is_alive() == false) {
 			outa(false);
-
 			continue; //skips trying to add components from a dead entity
-		}
-		else {
-			outa(true);
-		}
+		} else { outa(true); }
 
 		auto c_position = e.get<position>();
 		if (c_position != nullptr) {
@@ -69,10 +55,8 @@ void save()
 			name comp{ c_name->n };
 			outa(comp);
 		}
-
 		outa(0); //marks the end of the entity components
 	}
-
 	outa(4294967295); //marks the end of the save file
 }
 
@@ -95,13 +79,12 @@ void load()
 		ina(is_alive);
 		if (is_alive == false) {
 			entity.destruct();
-
 			continue;
-		};
+		}
 
 		entities[entity.id()] = entity; //adds the entity if it does not already exist ;; note: is after checking for aliveness
 
-		while (comp_id != 0) {
+		while (comp_id != 0) { //comp_id of 0 marks the end
 			ina(comp_id);
 
 			switch (comp_id) {
@@ -130,7 +113,7 @@ int main()
 		.set<position>({ 5,10 })
 		.set<name>({ "entity_2" }));
 
-	entities[100002].destruct();
+	entities[100002].destruct(); //testing entity death saving
 
 	save();
 
