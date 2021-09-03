@@ -4,6 +4,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/binary.hpp>
 #include <fstream>
+#include <unordered_map>
 
 //for saving ;; repeat pattern for each savable component
 //auto c_<COMPONENT_NAME> = e.get<COMPONENT_NAME>();
@@ -20,7 +21,7 @@
 //	entity.set<position>({ c_<COMPONENT_NAME>-><nVariable> }; repeat c_<COMPONENT_NAME>-><nVariable> for each variable in the component
 //	break;
 
-std::map<flecs::entity_t, flecs::entity> entities; //entities are stored as a map form the id to the class ;; prob replace with unordered_map
+std::unordered_map<flecs::entity_t, flecs::entity> entities; //entities are stored as a unordered_map form the id to the class
 
 void save()
 {
