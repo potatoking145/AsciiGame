@@ -3,29 +3,46 @@
 
 namespace window
 {
-	void HideConsole();
-	void ShowConsole();
-	bool IsConsoleVisible();
+	extern uint8_t current_window; //tracks how many window's have been created ;; used to give each window a unique id
+
+	//Default Params
+	extern const char* DEF_WINDOW_TITLE;
+	extern bool DEF_VSYNC;
+	extern int DEF_SDL_WINDOW_FLAGS;
+
+	inline void HideConsole() { ::ShowWindow(::GetConsoleWindow(), SW_HIDE); };
+	inline void ShowConsole() { ::ShowWindow(::GetConsoleWindow(), SW_SHOW); };
+	inline bool IsConsoleVisible() { return ::IsWindowVisible(::GetConsoleWindow()) != FALSE; };
 
 	class ApplicationInterface
 	{
 	public:
 		ApplicationInterface();
+		ApplicationInterface(const char*, bool, int);
+		~ApplicationInterface() = default;
+
+		inline void DisplayConsole(TCOD_Console& console) { context->present(console); };
+		inline bool IsClosed(SDL_Event* event) { return (event->window.windowID == id && event->window.event == SDL_WINDOWEVENT_CLOSE); }; //Checks if the exit button has been pressed
+		inline bool IfClosedClose(SDL_Event* event) //Closed the window if the close button has been pressed
+		{
+			if (IsClosed(event)) {
+				context.reset();
+				return true;
+			}
+			else {
+				return false;
+			}
+		};
+
+		inline uint8_t GetId() { return id; };
 	private:
-		//Default Params
-		const char* DEF_WINDOW_TITLE = "Greenfingers";
-		int DEF_TCOD_VERSION = TCOD_COMPILEDVERSION; // Denotes the use of the pre-compiled version as opposed to the source code
-		bool DEF_VSYNC = true;
-		int DEF_SDL_WINDOW_FLAGS = SDL_WINDOW_RESIZABLE;
-		int DEF_RENDERER = TCOD_RENDERER_SDL2;
+		uint8_t id; //tracks this window's id ;; used for checking which window an event happened in
 
-		TCOD_ContextParams generic_context_params;
+		TCOD_ContextParams context_params;
+		void InitContextParams();
+		void InitContextParams(const char*, bool, int);
 
-		inline void InitGenericContextParams();
-
-
-		tcod::ContextPtr generic_context;
-		tcod::ContextPtr* active_context;
+		tcod::ContextPtr context;
 	};
 }
 

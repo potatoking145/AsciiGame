@@ -7,7 +7,6 @@
 //C++ standard library headers
 #include <iostream>
 #include <string>
-#include <iostream>
 #include <unordered_map>
 
 #include <libtcod/libtcod.h>
