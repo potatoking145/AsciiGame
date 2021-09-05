@@ -1,33 +1,12 @@
-#include <iostream>
-#include <unordered_map>
-#include <libtcod/libtcod.h>
-#include <sdl/SDL.h>
-#include <flecs.h>
-//std::unordered_multimap<
-
-struct mod__moveposition
-{
-	struct comp__position {
-		uint8_t x, y;
-	};
-
-	mod__moveposition(flecs::world& world)
-	{
-		world.module<mod__moveposition>();
-
-		world.pod_component<comp__position>();
-	}
-};
-
+#include "window.h"
 
 int main(int argc, char* args[])
 {
-	flecs::world world;
-	auto mod = world.import<mod__moveposition>();
-	auto test = world.entity();
-	test.set<mod__moveposition::comp__position>({10, 35});
+	window::HideConsole();
 
 	tcod::ConsolePtr console = tcod::new_console(80, 25);
+
+	//window::ApplicationInterface app;
 
 	TCOD_ContextParams params{};
 	params.tcod_version = TCOD_COMPILEDVERSION;  // This is required.
@@ -36,6 +15,7 @@ int main(int argc, char* args[])
 	params.window_title = "Libtcod Project";
 	params.vsync = true;
 	params.sdl_window_flags = SDL_WINDOW_RESIZABLE;
+	params.renderer_type = TCOD_RENDERER_SDL2;
 
 	tcod::ContextPtr context = tcod::new_context(params);
 
@@ -54,8 +34,13 @@ int main(int argc, char* args[])
 			std::cout << event.key.keysym.sym << std::endl;
 			if (event.key.keysym.sym == SDLK_F1) {
 				tcod::print(*console, 0, 1, "HERE!!!!!", nullptr, nullptr, TCOD_BKGND_SET, TCOD_LEFT);
-				std::cout << "h" << std::endl;
+			}
+
+			if (event.key.keysym.sym == SDLK_TILDE) {
+				window::ShowConsole();
 			}
 		}
 	}
+
+	return 0;
 }

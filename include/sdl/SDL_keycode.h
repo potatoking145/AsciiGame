@@ -89,6 +89,9 @@ typedef enum
     SDLK_QUESTION = '?',
     SDLK_AT = '@',
 
+    //added by me
+    SDLK_TILDE = 96,
+
     /*
        Skip uppercase letters
      */

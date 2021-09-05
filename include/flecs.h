@@ -20,7 +20,7 @@
 // #define FLECS_NO_CPP
 
 /* FLECS_CUSTOM_BUILD should be defined when manually selecting features */
-// #define FLECS_CUSTOM_BUILD
+//#define FLECS_CUSTOM_BUILD
 
 /* FLECS_SANITIZE enables expensive checks that can detect issues early */
 #ifndef NDEBUG
