@@ -19,9 +19,18 @@ namespace window
 	public:
 		ApplicationInterface();
 		ApplicationInterface(const char*, bool, int);
-		~ApplicationInterface() = default;
+		~ApplicationInterface();
 
 		inline void DisplayConsole(TCOD_Console& console) { context->present(console); };
+		inline void CaptureEvent(SDL_Event* event)
+		{
+			if (event->window.windowID == id) {
+				captured_event = event;
+			}
+			else {
+				captured_event = nullptr;
+			}
+		};
 		inline bool IsClosed(SDL_Event* event) { return (event->window.windowID == id && event->window.event == SDL_WINDOWEVENT_CLOSE); }; //Checks if the exit button has been pressed
 		inline bool IfClosedClose(SDL_Event* event) //Closed the window if the close button has been pressed
 		{
@@ -33,8 +42,8 @@ namespace window
 				return false;
 			}
 		};
-
 		inline uint8_t GetId() { return id; };
+		inline SDL_Event* GetCapturedEvent() { return captured_event; };
 	private:
 		uint8_t id; //tracks this window's id ;; used for checking which window an event happened in
 
@@ -43,6 +52,8 @@ namespace window
 		void InitContextParams(const char*, bool, int);
 
 		tcod::ContextPtr context;
+
+		SDL_Event* captured_event{nullptr};
 	};
 }
 

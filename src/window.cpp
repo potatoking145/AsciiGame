@@ -15,14 +15,21 @@ window::ApplicationInterface::ApplicationInterface()
 	id = current_window++;
 }
 
-window::ApplicationInterface::ApplicationInterface(const char* title, bool vsync, int flags) {
+window::ApplicationInterface::ApplicationInterface(const char* title, bool vsync, int flags)
+{
 	InitContextParams(title, vsync, flags);
 	context = tcod::new_context(context_params);
 
 	id = current_window++;
 }
 
-inline void window::ApplicationInterface::InitContextParams(const char* title, bool vsync, int flags) {
+window::ApplicationInterface::~ApplicationInterface()
+{
+	delete captured_event;
+}
+
+inline void window::ApplicationInterface::InitContextParams(const char* title, bool vsync, int flags)
+{
 	context_params.tcod_version = TCOD_COMPILEDVERSION; // Denotes the use of the pre-compiled version as opposed to the source code
 	context_params.window_title = title;
 	context_params.vsync = vsync;
