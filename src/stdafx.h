@@ -8,7 +8,13 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <filesystem>
+#include <chrono>
+#include <type_traits>
+#include <fstream>
 
+//Local libraries
 #include <libtcod/libtcod.h>
 #include <sdl/SDL.h>
 #include <cereal/types/memory.hpp>

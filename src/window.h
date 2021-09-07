@@ -3,13 +3,6 @@
 
 namespace window
 {
-	extern uint8_t current_window; //tracks how many window's have been created ;; used to give each window a unique id
-
-	//Default Params
-	extern const char* DEF_WINDOW_TITLE;
-	extern bool DEF_VSYNC;
-	extern int DEF_SDL_WINDOW_FLAGS;
-
 	inline void HideConsole() { ::ShowWindow(::GetConsoleWindow(), SW_HIDE); };
 	inline void ShowConsole() { ::ShowWindow(::GetConsoleWindow(), SW_SHOW); };
 	inline bool IsConsoleVisible() { return ::IsWindowVisible(::GetConsoleWindow()) != FALSE; };
@@ -18,21 +11,16 @@ namespace window
 	{
 	public:
 		ApplicationInterface();
-		ApplicationInterface(const char*, bool, int);
+		ApplicationInterface(const char*, bool, int, int);
 		~ApplicationInterface();
 
 		inline void DisplayConsole(TCOD_Console& console) { context->present(console); };
 		inline void CaptureEvent(SDL_Event* event)
 		{
-			if (event->window.windowID == id) {
-				captured_event = event;
-			}
-			else {
-				captured_event = nullptr;
-			}
+			captured_event = (event->window.windowID == id) ? event : nullptr;
 		};
 		inline bool IsClosed(SDL_Event* event) { return (event->window.windowID == id && event->window.event == SDL_WINDOWEVENT_CLOSE); }; //Checks if the exit button has been pressed
-		inline bool IfClosedClose(SDL_Event* event) //Closed the window if the close button has been pressed
+		inline bool IfClosedClose(SDL_Event* event) //Closes the window if the close button has been pressed
 		{
 			if (IsClosed(event)) {
 				context.reset();
@@ -49,11 +37,11 @@ namespace window
 
 		TCOD_ContextParams context_params;
 		void InitContextParams();
-		void InitContextParams(const char*, bool, int);
+		void InitContextParams(const char*, bool, int, int);
 
 		tcod::ContextPtr context;
 
-		SDL_Event* captured_event{nullptr};
+		SDL_Event* captured_event{nullptr}; //nullptr indicates no captured event
 	};
 }
 
