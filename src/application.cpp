@@ -1,5 +1,5 @@
 #include "application.h"
 
-namespace application {
-
+void application::Application::Progress()
+{
 }
