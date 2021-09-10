@@ -11,7 +11,7 @@ namespace application {
 
 		int dummy; //delete later
 
-		//~ApplicationCtx() { delete global; } // prevents memory leak
+		~ApplicationCtx() { delete global; } // prevents memory leak
 	};
 
 	class Application {
