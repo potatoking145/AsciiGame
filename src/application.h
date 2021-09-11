@@ -9,8 +9,6 @@ namespace application {
 	struct ApplicationCtx {
 		ApplicationManagerCtx* global;
 
-		int dummy; //delete later
-
 		~ApplicationCtx() { delete global; } // prevents memory leak
 	};
 
@@ -29,8 +27,16 @@ namespace application {
 		ApplicationManager() = default;
 		~ApplicationManager() = default;
 
-		void CreateApplication();
-		void ProgressApplications();
+		inline void CreateApplication( /*insert constructor args*/ )
+		{
+			apps.emplace_back(Application( /* insert constructor args */ ));
+		}
+		inline void ProgressApplications()
+		{
+			for (Application app : apps) {
+				app.Progress();
+			}
+		}
 	};
 }
 
