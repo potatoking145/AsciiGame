@@ -14,10 +14,17 @@ namespace application {
 
 	class Application {
 	public:
-		Application() = default;
+		uint8_t id;
+
+		Application(uint8_t _id)
+			: id(std::move(_id)) {};
+
 		~Application() = default;
 
-		void Progress();
+		virtual void Progress()
+		{
+			std::cout << "Application(" << id << "). Has no Progress overload." << std::endl;
+		};
 	};
 
 	class ApplicationManager {
@@ -29,7 +36,16 @@ namespace application {
 
 		inline void CreateApplication( /*insert constructor args*/ )
 		{
-			apps.emplace_back(Application( /* insert constructor args */ ));
+			apps.emplace_back( std::distance(apps.begin(), apps.end()) + 1 );
+		}
+		inline void DeleteApplication(uint8_t id)
+		{
+			for (auto it = apps.begin(); it != apps.end(); ++it) {
+				if (it->id == id) {
+					apps.erase(it);
+					break;
+				}
+			}
 		}
 		inline void ProgressApplications()
 		{

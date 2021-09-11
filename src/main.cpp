@@ -1,21 +1,21 @@
-#include "window.h"
+#include "application.h"
 
 int main(int argc, char* args[])
 {
-	tcod::ConsolePtr console = tcod::new_console(80, 25);
-	window::ApplicationInterface app;
+	//tcod::ConsolePtr console = tcod::new_console(80, 25);
+	//window::ApplicationInterface app;
 
-	SDL_Event event;
-	while (true) {
-		app.DisplayConsole(*console);
+	//SDL_Event event;
+	//while (true) {
+	//	app.DisplayConsole(*console);
 
-		while (SDL_PollEvent(&event)) {
-			if (app.IfClosedClose(&event)) {
-				std::cout << "CLosed!!!";
-				return 0;
-			}
-		}
-	}
+	//	while (SDL_PollEvent(&event)) {
+	//		if (app.IfClosedClose(&event)) {
+	//			std::cout << "CLosed!!!";
+	//			return 0;
+	//		}
+	//	}
+	//}
 
 	return 0;
 }
