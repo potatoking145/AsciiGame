@@ -1,56 +1,77 @@
 #ifndef GREENFINGERS_APPLICATION_H_
 #define GREENFINGERS_APPLICATION_H_
 
+// Example Application class
+//class test : public application::Application {
+//public:
+//	test(int _dummy) : dummy(_dummy) {}; ;; required
+//
+//	int dummy;
+//
+//	void Progress()
+//	{
+//		std::wcout
+//			<< dummy
+//			<< _ctx.dummy ;; local context
+//			<< _global_ctx->dummy; global context
+//	};
+//};
+
 namespace application {
 	struct ApplicationManagerCtx {
-		int dummy; // delete later
+		int dummy{ 777 };
 	};
 
 	struct ApplicationCtx {
-		ApplicationManagerCtx* global;
-
-		~ApplicationCtx() { delete global; } // prevents memory leak
+		int dummy{ 666 };
 	};
 
 	class Application {
+	private:
+		uint8_t _id;
+	protected:
+		ApplicationCtx _ctx;
+		ApplicationManagerCtx* _global_ctx;
 	public:
-		uint8_t id;
+		friend class ApplicationManager;
 
-		Application(uint8_t _id)
-			: id(std::move(_id)) {};
-
-		~Application() = default;
+		virtual ~Application() = default;
 
 		virtual void Progress()
 		{
-			std::cout << "Application(" << id << "). Has no Progress overload." << std::endl;
+			std::wcout << "Application(" << _id << "). Has no Progress overload." << std::endl;
 		};
 	};
 
 	class ApplicationManager {
 	private:
-		std::vector<Application> apps;
+		std::vector<std::unique_ptr<Application>> _apps;
+		ApplicationManagerCtx _global_ctx;
 	public:
 		ApplicationManager() = default;
 		~ApplicationManager() = default;
 
-		inline void CreateApplication( /*insert constructor args*/ )
+		template<typename T, typename... T_args>
+		void CreateApplication(T_args... args)
 		{
-			apps.emplace_back( std::distance(apps.begin(), apps.end()) + 1 );
+			auto app = std::make_unique<T>( std::forward<T_args>(args)... );
+			app->_id = std::distance(_apps.begin(), _apps.end()) + 1;
+			app->_global_ctx = &_global_ctx;
+			_apps.push_back(std::move(app));
 		}
 		inline void DeleteApplication(uint8_t id)
 		{
-			for (auto it = apps.begin(); it != apps.end(); ++it) {
-				if (it->id == id) {
-					apps.erase(it);
+			for (auto it = _apps.begin(); it != _apps.end(); ++it) {
+				if ((*it)->_id == id) {
+					_apps.erase(it);
 					break;
 				}
 			}
 		}
 		inline void ProgressApplications()
 		{
-			for (Application app : apps) {
-				app.Progress();
+			for (auto it = _apps.begin(); it != _apps.end(); ++it) {
+				(*it)->Progress();
 			}
 		}
 	};
