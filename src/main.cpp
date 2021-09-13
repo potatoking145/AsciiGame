@@ -1,4 +1,5 @@
 #include "application.h"
+#include "window.h"
 
 int main(int argc, char* args[])
 {
