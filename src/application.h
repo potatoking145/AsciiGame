@@ -19,7 +19,9 @@
 
 namespace application {
 	struct ApplicationManagerCtx {
-		int dummy;
+		std::unordered_map<std::string, flecs::world*> worlds;
+
+		int s{1};
 	};
 
 	struct ApplicationCtx {
@@ -109,15 +111,21 @@ namespace application {
 		ApplicationCtx _ctx;
 		ApplicationManagerCtx* _global_ctx;
 		ApplicationInterface _interface;
+		flecs::world _ecs_world;
 	public:
 		friend class ApplicationManager;
 
 		virtual ~Application() = default;
 
+		virtual void Init()
+		{
+			std::wcout << "Application(" << _id << "). Has no Init overload." << std::endl;
+		}
+
 		virtual void Progress()
 		{
 			std::wcout << "Application(" << _id << "). Has no Progress overload." << std::endl;
-		};
+		}
 	};
 
 	class ApplicationManager {
@@ -136,6 +144,8 @@ namespace application {
 			auto app = std::make_unique<T>( std::forward<T_args>(args)... );
 			app->_id = id;
 			app->_global_ctx = &_global_ctx;
+
+			app->Init();
 			_apps.push_back(std::move(app));
 
 			return id;

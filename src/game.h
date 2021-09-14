@@ -3,10 +3,14 @@
 
 #include "application.h"
 
-class Game : public application::Application
-{
-public:
-	int x;
-};
+namespace game {
+	class Game : public application::Application
+	{
+	private:
+	public:
+
+		void Progress();
+	};
+}
 
 #endif

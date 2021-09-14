@@ -1,8 +1,11 @@
 #include "application.h"
 #include "window.h"
+#include "game.h"
 
 int main(int argc, char* args[])
 {
+	application::ApplicationManager appm;
+	appm.CreateApplication<game::Game>();
 	//tcod::ConsolePtr console = tcod::new_console(80, 25);
 	//window::ApplicationInterface app;
 
