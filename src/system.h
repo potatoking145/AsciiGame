@@ -11,28 +11,19 @@ namespace ecs_system
 	public:
 		std::string name;
 
-		~System() = default;
-
 		System(const char* _name)
 		{
 			name = _name;
 		}
-
-		virtual void Init(flecs::world*, application::ApplicationCtx*)
-		{
-			std::wcout << "System(" << name.c_str() << "has no Init overload." << std::endl;
-		}
+		~System() = default;
 	};
 
 	class sysMove : public System
 	{
 	public:
-		sysMove(const char* _name, flecs::world* world, application::ApplicationCtx* ctx) : System(_name) {};
-
-		void Init(flecs::world* world, application::ApplicationCtx* ctx)
+		sysMove(const char* _name, flecs::world* world, application::ApplicationCtx* ctx) : System(_name)
 		{
 			world->system<comp_position, comp_velocity, comp_last_position>(name.c_str())
-				.ctx(ctx)
 				.iter([](flecs::iter it, comp_position* Position, comp_velocity* Velocity, comp_last_position* LastPosition)
 					{
 						LastPosition->x = Position->x;
@@ -40,8 +31,20 @@ namespace ecs_system
 
 						Position->x += Velocity->x;
 						Position->y += Velocity->y;
+					});
+		}
+	};
 
-						std::wcout << "Run" << std::endl;
+	class sysDraw : public System
+	{
+	public:
+		sysDraw(const char* _name, flecs::world* world, application::ApplicationCtx* ctx) : System(_name)
+		{
+			world->system<comp_position, comp_char>(name.c_str())
+				.ctx(ctx)
+				.iter([ctx](flecs::iter it, comp_position* Position, comp_char* Char)
+					{
+						TCOD_console_put_char(ctx->console.get(), Position->x, Position->y, Char->char_code, TCOD_BKGND_DEFAULT);
 					});
 		}
 	};

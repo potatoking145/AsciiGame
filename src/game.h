@@ -9,6 +9,7 @@ namespace game {
 	{
 	private:
 		ecs_system::sysMove _move_system = ecs_system::sysMove("move", &_ecs_world, &_ctx);
+		ecs_system::sysDraw _draw_system = ecs_system::sysDraw("draw", &_ecs_world, &_ctx);
 	public:
 		Game() = default;
 		~Game() = default;

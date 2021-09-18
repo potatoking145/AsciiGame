@@ -1,7 +1,7 @@
 #include "application.h"
 #include "game.h"
 
-int main(int argc, char* args[])
+int main(int argc, char* argv[])
 {
 	SDL_Event event;
 	auto AppManager = application::ApplicationManager(&event);
@@ -11,6 +11,8 @@ int main(int argc, char* args[])
 		SDL_PollEvent(&event);
 		AppManager.ProgressApplications();
 	}
+
+	TCOD_quit();
 
 	return 0;
 }

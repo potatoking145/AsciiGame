@@ -28,13 +28,15 @@ namespace application
 			_context_params.sdl_window_flags = SDL_WINDOW_RESIZABLE;
 			_context_params.renderer_type = TCOD_RENDERER_SDL2;
 		}
-		inline void InitContextParams(const char* title, bool vsync, int flags, int renderer)
+		inline void InitContextParams(const char* title, bool vsync, int flags, int renderer, tcod::ConsolePtr* console)
 		{
 			_context_params.tcod_version = TCOD_COMPILEDVERSION; // Denotes the use of the pre-compiled version as opposed to the source code
 			_context_params.window_title = title;
 			_context_params.vsync = vsync;
 			_context_params.sdl_window_flags = flags;
 			_context_params.renderer_type = renderer;
+			_context_params.rows = console->get()->h;
+			_context_params.columns = console->get()->w;
 		}
 
 		tcod::ContextPtr _context;
@@ -47,9 +49,9 @@ namespace application
 			InitContextParams();
 			_context = tcod::new_context(_context_params);
 		}
-		inline void InitContext(const char* title, bool vsync, int flags, int renderer)
+		inline void InitContext(const char* title, bool vsync, int flags, int renderer, tcod::ConsolePtr* console)
 		{
-			InitContextParams(title, vsync, flags, renderer);
+			InitContextParams(title, vsync, flags, renderer, console);
 			_context = tcod::new_context(_context_params);
 		}
 
