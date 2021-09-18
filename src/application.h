@@ -108,6 +108,7 @@ namespace application
 				return;
 			}
 
+			TCOD_console_clear(_ctx.console.get());
 			_ecs_world.progress(0); // 0 means that flecs will find the delta_time on its own
 			_interface.DisplayConsole(*_ctx.console);
 		}

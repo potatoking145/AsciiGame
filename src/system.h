@@ -41,7 +41,6 @@ namespace ecs_system
 		sysDraw(const char* _name, flecs::world* world, application::ApplicationCtx* ctx) : System(_name)
 		{
 			world->system<comp_position, comp_char>(name.c_str())
-				.ctx(ctx)
 				.iter([ctx](flecs::iter it, comp_position* Position, comp_char* Char)
 					{
 						TCOD_console_put_char(ctx->console.get(), Position->x, Position->y, Char->char_code, TCOD_BKGND_DEFAULT);
