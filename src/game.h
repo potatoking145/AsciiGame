@@ -2,14 +2,18 @@
 #define GREENFINGERS_GAME_GAME_H_
 
 #include "application.h"
+#include "system.h"
 
 namespace game {
 	class Game : public application::Application
 	{
 	private:
+		ecs_system::sysMove _move_system = ecs_system::sysMove("move", &_ecs_world, &_ctx);
 	public:
+		Game() = default;
+		~Game() = default;
 
-		void Progress();
+		void Init();
 	};
 }
 

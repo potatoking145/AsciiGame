@@ -1,31 +1,16 @@
 #ifndef GREENFINGERS_APPLICATION_H_
 #define GREENFINGERS_APPLICATION_H_
 
-// Example Application class
-//class test : public application::Application {
-//public:
-//	test(int _dummy) : dummy(_dummy) {}; ;; required
-//
-//	int dummy;
-//
-//	void Progress()
-//	{
-//		std::wcout
-//			<< dummy
-//			<< _ctx.dummy ;; local context
-//			<< _global_ctx->dummy; global context
-//	};
-//};
-
-namespace application {
+namespace application
+{
 	struct ApplicationManagerCtx {
-		std::unordered_map<std::string, flecs::world*> worlds;
-
-		int s{1};
+		std::unordered_map<std::string, flecs::world*> ecs_worlds;
 	};
 
 	struct ApplicationCtx {
-		int dummy;
+		ApplicationManagerCtx* global_ctx;
+		tcod::ConsolePtr console;
+		SDL_Event* event;
 	};
 
 	class ApplicationInterface
@@ -53,8 +38,6 @@ namespace application {
 		}
 
 		tcod::ContextPtr _context;
-
-		SDL_Event* _captured_event{ nullptr }; //nullptr indicates no captured event
 	public:
 		ApplicationInterface();
 		~ApplicationInterface();
@@ -71,24 +54,17 @@ namespace application {
 		}
 
 		inline void DisplayConsole(TCOD_Console& console) { _context->present(console); };
-		inline void CaptureEvent(SDL_Event* event)
+		inline bool IsEventInThisWindow(SDL_Event* event)
 		{
-			_captured_event = (event->window.windowID == _id) ? event : nullptr;
-		};
-
-		inline bool IsClosed() { return (_captured_event->window.windowID == _id && _captured_event->window.event == SDL_WINDOWEVENT_CLOSE); }; //Checks if the close window button has been pressed
-		inline bool IsClosed(SDL_Event* event) { return (event->window.windowID == _id && event->window.event == SDL_WINDOWEVENT_CLOSE); };
-
-		inline bool IfClosedClose() //Closes the window if the close button has been pressed
-		{
-			if (IsClosed(_captured_event)) {
-				_context.reset();
-				return true;
+			if (event != nullptr) {
+				return event->window.windowID == _id ? true : false;
 			}
 			else {
 				return false;
 			}
 		};
+
+		inline bool IsClosed(SDL_Event* event) { return (IsEventInThisWindow(event) && event->window.event == SDL_WINDOWEVENT_CLOSE); };//Checks if the close window button has been pressed
 		inline bool IfClosedClose(SDL_Event* event)
 		{
 			if (IsClosed(event)) {
@@ -101,30 +77,37 @@ namespace application {
 		};
 
 		inline uint8_t GetId() { return _id; };
-		inline SDL_Event* GetCapturedEvent() { return _captured_event; };
 	};
 
 	class Application {
 	private:
 		uint8_t _id;
+		bool _is_closed = false;
 	protected:
 		ApplicationCtx _ctx;
-		ApplicationManagerCtx* _global_ctx;
 		ApplicationInterface _interface;
 		flecs::world _ecs_world;
 	public:
 		friend class ApplicationManager;
 
-		virtual ~Application() = default;
+		Application() = default;
+		~Application() = default;
 
 		virtual void Init()
 		{
 			std::wcout << "Application(" << _id << "). Has no Init overload." << std::endl;
 		}
 
-		virtual void Progress()
+		virtual inline void Progress()
 		{
-			std::wcout << "Application(" << _id << "). Has no Progress overload." << std::endl;
+			if (_interface.IfClosedClose(_ctx.event))
+			{
+				_is_closed = true;
+				return;
+			}
+
+			_ecs_world.progress(0); // 0 means that flecs will find the delta_time on its own
+			_interface.DisplayConsole(*_ctx.console);
 		}
 	};
 
@@ -132,8 +115,14 @@ namespace application {
 	private:
 		std::vector<std::unique_ptr<Application>> _apps;
 		ApplicationManagerCtx _global_ctx;
+		SDL_Event* _event;
 	public:
-		ApplicationManager() = default;
+		bool is_closed = false;
+
+		ApplicationManager(SDL_Event* event)
+		{
+			_event = event;
+		}
 		~ApplicationManager() = default;
 
 		template<typename T, typename... T_args>
@@ -141,9 +130,10 @@ namespace application {
 		{
 			auto id = std::distance(_apps.begin(), _apps.end()) + 1;
 
-			auto app = std::make_unique<T>( std::forward<T_args>(args)... );
+			auto app = std::make_unique<T>(std::forward<T_args>(args)...);
 			app->_id = id;
-			app->_global_ctx = &_global_ctx;
+			app->_ctx.global_ctx = &_global_ctx;
+			app->_ctx.event = _event;
 
 			app->Init();
 			_apps.push_back(std::move(app));
@@ -161,8 +151,18 @@ namespace application {
 		}
 		inline void ProgressApplications()
 		{
+			if (_apps.size() == 0) {
+				is_closed = true;
+				return;
+			}
+
 			for (auto it = _apps.begin(); it != _apps.end(); ++it) {
 				(*it)->Progress();
+
+				if ((*it)->_is_closed) {
+					DeleteApplication((*it)->_id);
+					break;
+				}
 			}
 		}
 	};
