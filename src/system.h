@@ -47,10 +47,4 @@ namespace ecs_system
 	};
 }
 
-//auto test(flecs::world* world) {
-//	auto sys = world->system<comp_position, comp_velocity>("move");
-//
-//	return sys.id().entity();
-//}
-
 #endif

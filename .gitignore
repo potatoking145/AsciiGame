@@ -10,8 +10,6 @@
 *.userosscache
 *.sln.docstates
 bin/*
-*.sln
-*.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 
