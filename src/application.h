@@ -169,6 +169,6 @@ namespace application
 			}
 		}
 	};
-}
+} // namespace application
 
 #endif

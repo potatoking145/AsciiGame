@@ -25,4 +25,6 @@
 #define NOMINMAX
 #include <windows.h>
 
+#pragma comment(lib, "user32.lib") // idk fixes issues with windows.h
+
 #endif
