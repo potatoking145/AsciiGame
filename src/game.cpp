@@ -11,6 +11,6 @@ void game::Game::Init()
 	_interface.InitContext("Greenfingers", true, SDL_WINDOW_RESIZABLE, TCOD_RENDERER_SDL2, &_ctx.console);
 
 	_ecs_world.entity() //test entity
-		.set<comp_position>({1,1})
-		.set<comp_char>({'A'});
+		.set<comp_position>({ 1,1 })
+		.set<comp_char>({ 'A' });
 }

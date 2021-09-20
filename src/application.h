@@ -5,6 +5,7 @@ namespace application
 {
 	struct ApplicationManagerCtx {
 		std::unordered_map<std::string, flecs::world*> ecs_worlds;
+		std::unordered_map<std::string, bool> keyboard_inputs;
 	};
 
 	struct ApplicationCtx {
@@ -99,7 +100,6 @@ namespace application
 		{
 			std::wcout << "Application(" << _id << "). Has no Init overload." << std::endl;
 		}
-
 		virtual inline void Progress()
 		{
 			if (_interface.IfClosedClose(_ctx.event))
@@ -112,13 +112,37 @@ namespace application
 			_ecs_world.progress(0); // 0 means that flecs will find the delta_time on its own
 			_interface.DisplayConsole(*_ctx.console);
 		}
+		inline bool DidKeyboardInputHappen(const char* input)
+		{
+			if (_interface.IsEventInThisWindow(_ctx.event)) {
+				return _ctx.global_ctx->keyboard_inputs[input];
+			}
+
+			return false;
+		}
 	};
 
 	class ApplicationManager {
 	private:
+		std::unordered_multimap<int, std::string> _keyboard_input_events;
 		std::vector<std::unique_ptr<Application>> _apps;
 		ApplicationManagerCtx _global_ctx;
 		SDL_Event* _event;
+
+		inline void UpdateInputEvents()
+		{
+			for (auto it = _keyboard_input_events.begin(); it != _keyboard_input_events.end(); ++it) {
+				if (_event->type == SDL_KEYDOWN
+					&& _event->key.keysym.sym == it->first 
+					&& _global_ctx.keyboard_inputs.find(it->second) != _global_ctx.keyboard_inputs.end()) 
+				{
+					_global_ctx.keyboard_inputs[it->second] = true;
+					continue;
+				}
+
+				_global_ctx.keyboard_inputs[it->second] = false;
+			}
+		}
 	public:
 		bool is_closed = false;
 
@@ -154,19 +178,26 @@ namespace application
 		}
 		inline void ProgressApplications()
 		{
-			if (_apps.size() == 0) {
+			if (_apps.size() == 0) { // check if all of the apps have been closed
 				is_closed = true;
 				return;
 			}
+
+			UpdateInputEvents();
 
 			for (auto it = _apps.begin(); it != _apps.end(); ++it) {
 				(*it)->Progress();
 
 				if ((*it)->_is_closed) {
 					DeleteApplication((*it)->_id);
-					break;
+					return;
 				}
 			}
+		}
+
+		inline void AddKeyboardInputEvent(int key_code, const char* input)
+		{
+			_keyboard_input_events.insert(std::pair(key_code, input));
 		}
 	};
 } // namespace application
