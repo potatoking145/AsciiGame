@@ -1,17 +1,15 @@
 #ifndef GREENFINGERS_APPLICATION_H_
 #define GREENFINGERS_APPLICATION_H_
 
+#include "inputs.h"
+
 namespace application
 {
 	struct ApplicationManagerCtx {
 		std::unordered_map<std::string, flecs::world*> ecs_worlds;
-		std::unordered_map<std::string, bool> keyboard_inputs;
-	};
+		std::unordered_map<uint16_t, bool> inputs;
 
-	struct ApplicationCtx {
-		ApplicationManagerCtx* global_ctx;
-		tcod::ConsolePtr console;
-		SDL_Event* event;
+		SDL_Event* sdl_event;
 	};
 
 	class ApplicationInterface
@@ -85,12 +83,15 @@ namespace application
 	class Application {
 	private:
 		uint8_t _id;
-		bool _is_closed = false;
 	protected:
-		ApplicationCtx _ctx;
-		ApplicationInterface _interface;
 		flecs::world _ecs_world;
+
+		bool _is_closed = false;
 	public:
+		ApplicationManagerCtx* global_ctx;
+		ApplicationInterface app_interface;
+		tcod::ConsolePtr console;
+
 		friend class ApplicationManager;
 
 		Application() = default;
@@ -102,20 +103,25 @@ namespace application
 		}
 		virtual inline void Progress()
 		{
-			if (_interface.IfClosedClose(_ctx.event))
+			if (app_interface.IfClosedClose(global_ctx->sdl_event))
 			{
 				_is_closed = true;
 				return;
 			}
 
-			TCOD_console_clear(_ctx.console.get());
+			TCOD_console_clear(console.get());
 			_ecs_world.progress(0); // 0 means that flecs will find the delta_time on its own
-			_interface.DisplayConsole(*_ctx.console);
+			app_interface.DisplayConsole(*console);
 		}
-		inline bool DidKeyboardInputHappen(const char* input)
+		inline bool DidInputHappen(uint16_t input)
 		{
-			if (_interface.IsEventInThisWindow(_ctx.event)) {
-				return _ctx.global_ctx->keyboard_inputs[input];
+#if _DEBUG
+			if (global_ctx->inputs.find(input) == global_ctx->inputs.end()) {
+				std::cout << "Err: Invalid Input Key" << std::endl;
+			}
+#endif
+			if (app_interface.IsEventInThisWindow(global_ctx->sdl_event)) {
+				return global_ctx->inputs[input];
 			}
 
 			return false;
@@ -124,23 +130,23 @@ namespace application
 
 	class ApplicationManager {
 	private:
-		std::unordered_multimap<int, std::string> _keyboard_input_events;
+		std::vector<std::function<uint16_t(SDL_Event*)>> _input_events;
 		std::vector<std::unique_ptr<Application>> _apps;
 		ApplicationManagerCtx _global_ctx;
-		SDL_Event* _event;
 
 		inline void UpdateInputEvents()
 		{
-			for (auto it = _keyboard_input_events.begin(); it != _keyboard_input_events.end(); ++it) {
-				if (_event->type == SDL_KEYDOWN
-					&& _event->key.keysym.sym == it->first 
-					&& _global_ctx.keyboard_inputs.find(it->second) != _global_ctx.keyboard_inputs.end()) 
-				{
-					_global_ctx.keyboard_inputs[it->second] = true;
-					continue;
-				}
+			for (auto it = _global_ctx.inputs.begin(); it != _global_ctx.inputs.end(); it++) {
+				it->second = false;
+			}
 
-				_global_ctx.keyboard_inputs[it->second] = false;
+			uint16_t result;
+			for (auto f : _input_events) {
+				result = f(_global_ctx.sdl_event);
+
+				if (result != inputs::EMPTY) {
+					_global_ctx.inputs[result] = true;
+				}
 			}
 		}
 	public:
@@ -148,7 +154,7 @@ namespace application
 
 		ApplicationManager(SDL_Event* event)
 		{
-			_event = event;
+			_global_ctx.sdl_event = event;
 		}
 		~ApplicationManager() = default;
 
@@ -159,8 +165,7 @@ namespace application
 
 			auto app = std::make_unique<T>(std::forward<T_args>(args)...);
 			app->_id = id;
-			app->_ctx.global_ctx = &_global_ctx;
-			app->_ctx.event = _event;
+			app->global_ctx = &_global_ctx;
 
 			app->Init();
 			_apps.push_back(std::move(app));
@@ -195,9 +200,9 @@ namespace application
 			}
 		}
 
-		inline void AddKeyboardInputEvent(int key_code, const char* input)
+		inline void AddInputEvent(std::function<uint16_t(SDL_Event*)> func)
 		{
-			_keyboard_input_events.insert(std::pair(key_code, input));
+			_input_events.push_back(func);
 		}
 	};
 } // namespace application

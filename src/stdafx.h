@@ -13,6 +13,7 @@
 #include <chrono>
 #include <type_traits>
 #include <fstream>
+#include <functional>
 
 //Local libraries
 #include <libtcod/libtcod.h>

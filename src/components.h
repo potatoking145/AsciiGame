@@ -27,8 +27,8 @@ struct comp_last_position
 
 struct comp_velocity
 {
-	uint8_t x;
-	uint8_t y;
+	int16_t x;
+	int16_t y;
 
 	template<class Archive>
 	void serialize(Archive& archive)

@@ -21,7 +21,7 @@ namespace ecs_system
 	class sysMove : public System
 	{
 	public:
-		sysMove(const char* _name, flecs::world* world, application::ApplicationCtx* ctx) : System(_name)
+		sysMove(const char* _name, flecs::world* world, application::Application* app) : System(_name)
 		{
 			world->system<comp_position, comp_velocity, comp_last_position>(name.c_str())
 				.iter([](flecs::iter it, comp_position* Position, comp_velocity* Velocity, comp_last_position* LastPosition)
@@ -38,12 +38,12 @@ namespace ecs_system
 	class sysDraw : public System
 	{
 	public:
-		sysDraw(const char* _name, flecs::world* world, application::ApplicationCtx* ctx) : System(_name)
+		sysDraw(const char* _name, flecs::world* world, application::Application* app) : System(_name)
 		{
 			world->system<comp_position, comp_char>(name.c_str())
-				.iter([ctx](flecs::iter it, comp_position* Position, comp_char* Char)
+				.iter([app](flecs::iter it, comp_position* Position, comp_char* Char)
 					{
-						TCOD_console_put_char(ctx->console.get(), Position->x, Position->y, Char->char_code, TCOD_BKGND_DEFAULT);
+						TCOD_console_put_char(app->console.get(), Position->x, Position->y, Char->char_code, TCOD_BKGND_DEFAULT);
 					});
 		}
 	};
