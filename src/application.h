@@ -130,23 +130,19 @@ namespace application
 
 	class ApplicationManager {
 	private:
-		std::vector<std::function<uint16_t(SDL_Event*)>> _input_events;
 		std::vector<std::unique_ptr<Application>> _apps;
 		ApplicationManagerCtx _global_ctx;
 
+		std::vector<uint16_t> InputEvents();
 		inline void UpdateInputEvents()
 		{
 			for (auto it = _global_ctx.inputs.begin(); it != _global_ctx.inputs.end(); it++) {
 				it->second = false;
 			}
 
-			uint16_t result;
-			for (auto f : _input_events) {
-				result = f(_global_ctx.sdl_event);
-
-				if (result != inputs::EMPTY) {
-					_global_ctx.inputs[result] = true;
-				}
+			auto inputs = InputEvents();
+			for (auto in : inputs) {
+				_global_ctx.inputs[in] = true;
 			}
 		}
 	public:
@@ -200,10 +196,6 @@ namespace application
 			}
 		}
 
-		inline void AddInputEvent(std::function<uint16_t(SDL_Event*)> func)
-		{
-			_input_events.push_back(func);
-		}
 	};
 } // namespace application
 
