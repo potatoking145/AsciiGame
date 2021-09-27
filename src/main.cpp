@@ -1,7 +1,6 @@
 #include "application.h"
 #include "game.h"
 #include "window.h"
-#include "inputs.h"
 
 inline void ProcessCommandArguments(int argc, char* argv[])
 {

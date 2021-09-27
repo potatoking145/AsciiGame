@@ -84,13 +84,12 @@ namespace application
 	private:
 		uint8_t _id;
 	protected:
-		flecs::world _ecs_world;
-
 		bool _is_closed = false;
 	public:
 		ApplicationManagerCtx* global_ctx;
 		ApplicationInterface app_interface;
 		tcod::ConsolePtr console;
+		flecs::world ecs_world;
 
 		friend class ApplicationManager;
 
@@ -110,7 +109,7 @@ namespace application
 			}
 
 			TCOD_console_clear(console.get());
-			_ecs_world.progress(0); // 0 means that flecs will find the delta_time on its own
+			ecs_world.progress(0); // 0 means that flecs will find the delta_time on its own
 			app_interface.DisplayConsole(*console);
 		}
 		inline bool DidInputHappen(uint16_t input)

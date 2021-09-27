@@ -212,6 +212,7 @@
     <ClInclude Include="src\inputs.h" />
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\system.h" />
+    <ClInclude Include="src\tags.h" />
     <ClInclude Include="src\window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

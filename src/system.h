@@ -2,6 +2,7 @@
 #define GREENFINGERS_SYSTEMS_SYSTEM_H_
 
 #include "components.h"
+#include "tags.h"
 #include "application.h"
 
 namespace ecs_system
@@ -9,21 +10,16 @@ namespace ecs_system
 	class System
 	{
 	public:
-		std::string name;
-
-		System(const char* _name)
-		{
-			name = _name;
-		}
+		System() = default;
 		~System() = default;
 	};
 
-	class sysMove : public System
+	class Move : public System
 	{
 	public:
-		sysMove(const char* _name, flecs::world* world, application::Application* app) : System(_name)
+		Move(const char* name, application::Application* app)
 		{
-			world->system<comp_position, comp_velocity, comp_last_position>(name.c_str())
+			app->ecs_world.system<comp_position, comp_velocity, comp_last_position>(name)
 				.iter([](flecs::iter it, comp_position* Position, comp_velocity* Velocity, comp_last_position* LastPosition)
 					{
 						LastPosition->x = Position->x;
@@ -31,19 +27,47 @@ namespace ecs_system
 
 						Position->x += Velocity->x;
 						Position->y += Velocity->y;
+
+						//TODO: Create a variable reset system
+						Velocity->x = 0;
+						Velocity->y = 0;
 					});
 		}
 	};
 
-	class sysDraw : public System
+	class Draw : public System
 	{
 	public:
-		sysDraw(const char* _name, flecs::world* world, application::Application* app) : System(_name)
+		Draw(const char* name, application::Application* app)
 		{
-			world->system<comp_position, comp_char>(name.c_str())
+			app->ecs_world.system<comp_position, comp_char>(name)
 				.iter([app](flecs::iter it, comp_position* Position, comp_char* Char)
 					{
 						TCOD_console_put_char(app->console.get(), Position->x, Position->y, Char->char_code, TCOD_BKGND_DEFAULT);
+					});
+		}
+	};
+
+	class PlayerController : public System
+	{
+	public:
+		PlayerController(const char* name, application::Application* app)
+		{
+			app->ecs_world.system<tag_player, comp_velocity>(name)
+				.iter([app](flecs::iter it, tag_player* ignore, comp_velocity* Velocity)
+					{
+						if (app->DidInputHappen(inputs::UP)) {
+							Velocity->y = -1;
+						}
+						else if (app->DidInputHappen(inputs::DOWN)) {
+							Velocity->y = 1;
+						}
+						else if (app->DidInputHappen(inputs::LEFT)) {
+							Velocity->x = -1;
+						}
+						else if (app->DidInputHappen(inputs::RIGHT)) {
+							Velocity->x = 1;
+						}
 					});
 		}
 	};
