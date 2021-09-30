@@ -13,18 +13,6 @@ struct comp_position
 	}
 };
 
-struct comp_last_position
-{
-	uint8_t x;
-	uint8_t y;
-
-	template<class Archive>
-	void serialize(Archive& archive)
-	{
-		archive(x, y);
-	}
-};
-
 struct comp_velocity
 {
 	int16_t x;

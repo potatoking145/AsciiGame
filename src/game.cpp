@@ -14,7 +14,6 @@ void game::Game::Init()
 
 	ecs_world.entity(1) // player
 		.set<comp_position>({ 0, 0 })
-		.set<comp_last_position>({ 0, 0 })
 		.set<comp_velocity>({ 0, 0 })
 		.set<comp_char>({ '@' })
 		.add<tag_player>();

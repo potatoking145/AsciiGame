@@ -19,18 +19,17 @@ namespace ecs_system
 	public:
 		Move(const char* name, application::Application* app)
 		{
-			app->ecs_world.system<comp_position, comp_velocity, comp_last_position>(name)
-				.iter([](flecs::iter it, comp_position* Position, comp_velocity* Velocity, comp_last_position* LastPosition)
+			app->ecs_world.system<comp_position, comp_velocity>(name)
+				.iter([](flecs::iter& it, comp_position* Position, comp_velocity* Velocity)
 					{
-						LastPosition->x = Position->x;
-						LastPosition->y = Position->y;
+						for (auto i : it) {
+							Position[i].x += Velocity[i].x;
+							Position[i].y += Velocity[i].y;
 
-						Position->x += Velocity->x;
-						Position->y += Velocity->y;
-
-						//TODO: Create a variable reset system
-						Velocity->x = 0;
-						Velocity->y = 0;
+							//TODO: Create a variable reset system
+							Velocity[i].x = 0;
+							Velocity[i].y = 0;
+						}
 					});
 		}
 	};
@@ -41,9 +40,11 @@ namespace ecs_system
 		Draw(const char* name, application::Application* app)
 		{
 			app->ecs_world.system<comp_position, comp_char>(name)
-				.iter([app](flecs::iter it, comp_position* Position, comp_char* Char)
+				.iter([app](flecs::iter& it, comp_position* Position, comp_char* Char)
 					{
-						TCOD_console_put_char(app->console.get(), Position->x, Position->y, Char->char_code, TCOD_BKGND_DEFAULT);
+						for (auto i : it) {
+							TCOD_console_put_char(app->console.get(), Position[i].x, Position[i].y, Char[i].char_code, TCOD_BKGND_DEFAULT);
+						}
 					});
 		}
 	};
@@ -54,19 +55,19 @@ namespace ecs_system
 		PlayerController(const char* name, application::Application* app)
 		{
 			app->ecs_world.system<tag_player, comp_velocity>(name)
-				.iter([app](flecs::iter it, tag_player* ignore, comp_velocity* Velocity)
+				.each([app](flecs::entity ignore1, tag_player& ignore2, comp_velocity& Velocity)
 					{
 						if (app->DidInputHappen(inputs::UP)) {
-							Velocity->y = -1;
+							Velocity.y = -1;
 						}
 						else if (app->DidInputHappen(inputs::DOWN)) {
-							Velocity->y = 1;
+							Velocity.y = 1;
 						}
 						else if (app->DidInputHappen(inputs::LEFT)) {
-							Velocity->x = -1;
+							Velocity.x = -1;
 						}
 						else if (app->DidInputHappen(inputs::RIGHT)) {
-							Velocity->x = 1;
+							Velocity.x = 1;
 						}
 					});
 		}
