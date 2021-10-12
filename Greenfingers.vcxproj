@@ -214,6 +214,7 @@
     <ClInclude Include="src\components.h" />
     <ClInclude Include="src\game.h" />
     <ClInclude Include="src\inputs.h" />
+    <ClInclude Include="src\singletons.h" />
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\system.h" />
     <ClInclude Include="src\tags.h" />

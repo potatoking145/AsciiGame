@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <fstream>
 #include <functional>
+#include <array>
 
 //Local libraries
 #include <libtcod/libtcod.h>
@@ -27,5 +28,9 @@
 #include <windows.h>
 
 #pragma comment(lib, "user32.lib") // idk fixes issues with windows.h
+
+//TODO: Repleace with actual world dimensions
+#define WORLD_WIDTH 90
+#define WORLD_HEIGHT 90
 
 #endif

@@ -194,7 +194,6 @@ namespace application
 				}
 			}
 		}
-
 	};
 } // namespace application
 

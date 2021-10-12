@@ -1,7 +1,7 @@
 #include "game.h"
 #include "components.h"
 #include "tags.h"
-#include "inputs.h"
+#include "singletons.h"
 
 void game::Game::Init()
 {
@@ -16,5 +16,8 @@ void game::Game::Init()
 		.set<comp_position>({ 0, 0 })
 		.set<comp_velocity>({ 0, 0 })
 		.set<comp_char>({ '@' })
-		.add<tag_player>();
+		.add<tag_player>()
+		.add<tag_collidable>();
+
+	ecs_world.add<singleton_collidable_entites_map>();
 }
