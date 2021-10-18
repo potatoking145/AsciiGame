@@ -17,20 +17,19 @@ namespace ecs_system
 
 	class Move : public System
 	{
+	private:
+		bool MoveEntity(application::Application*, flecs::entity*, comp_position*, comp_velocity*, bool);
 	public:
 		Move(const char* name, application::Application* app)
 		{
 			app->ecs_world.system<comp_position, comp_velocity>(name)
-				.iter([](flecs::iter& it, comp_position* Position, comp_velocity* Velocity)
+				.each([this, app](flecs::entity e, comp_position& Position, comp_velocity& Velocity)
 					{
-						for (auto i : it) {
-							Position[i].x += Velocity[i].x;
-							Position[i].y += Velocity[i].y;
+						MoveEntity(app, &e, &Position, &Velocity, e.has<tag_collidable>());
 
-							//TODO: Create a variable reset system
-							Velocity[i].x = 0;
-							Velocity[i].y = 0;
-						}
+						//TODO: Create a variable reset system
+						Velocity.x = 0;
+						Velocity.y = 0;
 					});
 		}
 	};
@@ -69,37 +68,6 @@ namespace ecs_system
 						}
 						else if (app->DidInputHappen(inputs::RIGHT)) {
 							Velocity.x = 1;
-						}
-					});
-		}
-	};
-
-	class Collision : public System
-	{
-	public:
-		Collision(const char* name, application::Application* app)
-		{
-			app->ecs_world.system<tag_collidable, comp_position, comp_velocity>(name)
-				.iter([app](flecs::iter& it, tag_collidable* ignore, comp_position* Position, comp_velocity* Velocity)
-					{
-						auto map = app->ecs_world.get<singleton_collidable_entites_map>()->map;
-
-						for (auto i : it) {
-							auto entity = map.at(Position->x).at(Position->y);
-
-							//Found Collision
-							if (entity != nullptr) {
-								//Reset Entity 1 Position
-								Position->x -= Velocity->x;
-								Position->y -= Velocity->y;
-
-								auto position = entity->get_mut<comp_position>();
-								auto velocity = entity->get_mut<comp_velocity>();
-
-								//Reset Entity 2 Position
-								position->x -= velocity->x;
-								position->y -= velocity->y;
-							}
 						}
 					});
 		}

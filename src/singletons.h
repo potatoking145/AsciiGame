@@ -6,4 +6,9 @@ struct singleton_collidable_entites_map
 	std::array<std::array<flecs::entity*, WORLD_HEIGHT>, WORLD_WIDTH> map{};
 };
 
+struct singleton_entites_map
+{
+	std::array<std::array<flecs::entity*, WORLD_HEIGHT>, WORLD_WIDTH> map{};
+};
+
 #endif

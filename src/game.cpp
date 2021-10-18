@@ -20,4 +20,5 @@ void game::Game::Init()
 		.add<tag_collidable>();
 
 	ecs_world.add<singleton_collidable_entites_map>();
+	ecs_world.add<singleton_entites_map>();
 }

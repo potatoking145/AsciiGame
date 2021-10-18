@@ -11,7 +11,6 @@ namespace game {
 		ecs_system::Move _move_system = ecs_system::Move("move", this);
 		ecs_system::Draw _draw_system = ecs_system::Draw("draw", this);
 		ecs_system::PlayerController _player_controller_system = ecs_system::PlayerController("player_controller", this);
-		ecs_system::Collision _collision_system = ecs_system::Collision("collision", this);
 	public:
 		Game() = default;
 		~Game() = default;
